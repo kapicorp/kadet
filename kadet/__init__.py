@@ -1,8 +1,21 @@
-import inspect
+from collections import defaultdict
 import json
 
-from addict import Dict
 import yaml
+
+
+class Dict(defaultdict):
+    __getattr__ = defaultdict.__getitem__
+    __setattr__ = defaultdict.__setitem__
+    __repr__ = dict.__repr__
+
+    def __init__(self, from_dict=None):
+        super(Dict, self).__init__(Dict)
+        if from_dict:
+            self.update(from_dict)
+
+    def to_dict(self):
+        return dict(self)
 
 
 class BaseObj(object):
@@ -71,7 +84,9 @@ class BaseObj(object):
                 self.root = Dict(_copy)
             else:
                 # XXX in Kapitan this is CompileError
-                raise ValueError("file_path is neither JSON or YAML: {}".format(file_path))
+                raise ValueError(
+                    "file_path is neither JSON or YAML: {}".format(file_path)
+                )
 
     def need(self, key, msg="key and value needed"):
         """
@@ -128,14 +143,3 @@ class BaseObj(object):
         returns object dict
         """
         return self._to_dict(self)
-
-def extends(func):
-    """
-    extend func()
-    runs super().func() and then func()
-    """
-    def wrapper(*args, **kwargs):
-        superfunc = getattr(super(type(args[0]), args[0]), func.__name__)
-        superfunc()
-        func(*args, **kwargs)
-    return wrapper
