@@ -1,4 +1,4 @@
-# Kadet is a Python module to easily define Python objects and serialize to JSON or YAML.
+# Kadet is a Python module to easily define objects and serialize to JSON or YAML.
 
 You can do this
 
@@ -34,7 +34,7 @@ pprint(ships)
 # Overview
 
 ## BaseObj
-BaseObj implements the basic object implementation that serializes into JSON or YAML.
+BaseObj implements the basic object that serializes into JSON or YAML.
 Setting keys in `self.root` means they will be serialized. Keys can be set as an hierarchy of attributes.
 The `self.body()` method is reserved for setting self.root on instantiation:
 
