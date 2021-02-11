@@ -82,6 +82,14 @@ class KadetTest(unittest.TestCase):
         }
         self.assertEqual(output, desired_output)
 
+    def test_root_list(self):
+        kobj = BaseObj()
+        kobj.root = [1, 2, 3, "a", False]
+        output = kobj.to_dict()
+        desired_output = [1, 2, 3, "a", False]
+        self.assertEqual(output, desired_output)
+
+
     def test_lists(self):
         kobj = KadetTestObj(name="testObj", size=5)
         kobj.root.with_lists = [
