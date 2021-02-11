@@ -1,4 +1,4 @@
-# Kadet is a Python module to easily define and reuse complex Python objects that serialize into JSON or YAML.
+# Kadet is a module to easily define and reuse complex Python objects that serialize into JSON or YAML.
 
 You can do this
 
