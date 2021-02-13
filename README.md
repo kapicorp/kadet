@@ -40,7 +40,7 @@ class MyApp(BaseObj):
     self.root.inner.foo = "bar"
     self.root.list = [1, 2, 3]
 
-yaml.dump(gyApp().dump())
+yaml.dump(MyApp().dump())
 ```
 
 serializes into:
@@ -82,7 +82,7 @@ obj = MyApp(name="myapp", foo="bar")
 
 Defining a large body with Python can be quite hard and repetitive to read and write.
 
-The `self.root_file()` method allows importing a YAML/JSON file to set self.root.
+The `self.root_file()` method allows importing a YAML/JSON file to set `self.root`.
 
 MyApp's skeleton can be set instead like this:
 
