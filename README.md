@@ -7,7 +7,7 @@ from pprint import pprint
 ships = BaseObj()
 ships.root.type.container = ["panamax", "suezmax", "post-panamax"]
 ships.root.type.carrier = ["conventional", "geared", "gearless"]
-ships.root.type.passenger = ["liner", "cruise", "pilgrimage"]
+ships.root.type.tanker = BaseObj.from_yaml("tankers.yml")
 
 pprint(ships)
 
@@ -40,7 +40,7 @@ class MyApp(BaseObj):
     self.root.inner.foo = "bar"
     self.root.list = [1, 2, 3]
 
-yaml.dump(MyApp().dump())
+yaml.dump(gyApp().dump())
 ```
 
 serializes into:
