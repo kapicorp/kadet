@@ -5,16 +5,22 @@ import yaml
 
 
 class Dict(defaultdict):
-    __getattr__ = defaultdict.__getitem__
-    __setattr__ = defaultdict.__setitem__
-    __repr__ = dict.__repr__
+    def __getattr__(self, name):
+        return defaultdict.__getitem__(self, name)
+
+    def __setattr__(self, name, value):
+        return defaultdict.__setitem__(self, name, value)
+
+    def __repr__(self):
+        return dict.__repr__(self)
 
     def __init__(self, from_dict=None):
         super(Dict, self).__init__(Dict)
         if from_dict:
+            assert isinstance(from_dict, dict), "from_dict is not of type dict"
             self.update(from_dict)
 
-    def to_dict(self):
+    def dump(self):
         return dict(self)
 
 
@@ -23,7 +29,7 @@ class BaseObj(object):
         """
         returns a BaseObj
         kwargs will be saved into self.kwargs
-        values in self.root are returned as dict via self.to_dict()
+        values in self.root are returned as dict/list via self.dump()
         """
         self.root = Dict()
         self.kwargs = Dict(kwargs)
@@ -31,10 +37,10 @@ class BaseObj(object):
         self.body()
 
     def __str__(self):
-        return str(self.to_dict())
+        return str(self.dump())
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} at {hex(id(self))} {self.to_dict()}>"
+        return f"<{self.__class__.__name__} at {hex(id(self))} {self.dump()}>"
 
     @classmethod
     def from_json(cls, file_path):
@@ -62,10 +68,10 @@ class BaseObj(object):
         returns a BaseObj initialise with dict_value
         """
         bobj = cls()
-        bobj.root = Dict(dict_value)
+        bobj.root = Dict(from_dict=dict_value)
         return bobj
 
-    def update_root(self, file_path):
+    def root_file(self, file_path):
         """
         update self.root with YAML/JSON content in file_path
         raises ValueError if file_path does not end with .yaml, .yml or .json
@@ -88,7 +94,7 @@ class BaseObj(object):
                     "file_path is neither JSON or YAML: {}".format(file_path)
                 )
 
-    def need(self, key, msg="key and value needed"):
+    def need(self, key, msg="key and value needed", istype=None):
         """
         requires that key is set in self.kwargs
         errors with msg if key not set
@@ -96,6 +102,10 @@ class BaseObj(object):
         err_msg = '{}: "{}": {}'.format(self.__class__.__name__, key, msg)
         if key not in self.kwargs:
             raise ValueError(err_msg)  # XXX in Kapitan this is CompileError
+        elif istype is not None:
+            assert isinstance(
+                self.kwargs[key], istype
+            ), f"'{key}' is not instance of '{istype}'"
 
     def new(self):
         """
@@ -110,36 +120,36 @@ class BaseObj(object):
         """
         pass
 
-    def _to_dict(self, obj):
+    def _dump(self, obj):
         """
         recursively update obj should it contain other
         BaseObj values
         """
         if isinstance(obj, BaseObj):
             if isinstance(obj.root, list):
-                obj.root = [self._to_dict(item) for item in obj.root]
+                obj.root = [self._dump(item) for item in obj.root]
                 # root is just a list, return itself
                 return obj.root
             else:
                 for k, v in obj.root.items():
-                    obj.root[k] = self._to_dict(v)
-                # BaseObj needs to return to_dict()
-                return obj.root.to_dict()
+                    obj.root[k] = self._dump(v)
+                # BaseObj needs to return dump()
+                return obj.root.dump()
         elif isinstance(obj, list):
-            obj = [self._to_dict(item) for item in obj]
-            # list has no .to_dict, return itself
+            obj = [self._dump(item) for item in obj]
+            # list has no .dump, return itself
             return obj
         elif isinstance(obj, dict):
             for k, v in obj.items():
-                obj[k] = self._to_dict(v)
-            # dict has no .to_dict, return itself
+                obj[k] = self._dump(v)
+            # dict has no .dump, return itself
             return obj
 
         # anything else, return itself
         return obj
 
-    def to_dict(self):
+    def dump(self):
         """
-        returns object dict
+        returns object dict/list
         """
-        return self._to_dict(self)
+        return self._dump(self)

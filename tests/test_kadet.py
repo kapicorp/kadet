@@ -15,7 +15,7 @@ from kadet import BaseObj, Dict
 class KadetTestObj(BaseObj):
     def new(self):
         self.need("name", "Need a name string")
-        self.need("size", "Need a size int")
+        self.need("size", "Need a size int", istype=int)
 
     def body(self):
         self.root.name = self.kwargs.name
@@ -45,13 +45,17 @@ class KadetTestObjWithInner(KadetTestObj):
 class KadetTest(unittest.TestCase):
     def test_parse_kwargs(self):
         kobj = BaseObj.from_dict({"this": "that", "not_hidden": True})
-        output = kobj.to_dict()
+        output = kobj.dump()
         desired_output = {"this": "that", "not_hidden": True}
         self.assertEqual(output, desired_output)
 
-    def test_to_dict(self):
+    def test_from_dict_assertion(self):
+        with self.assertRaises(AssertionError):
+            BaseObj.from_dict(["this", "is", "not", "a", "dict"])
+
+    def test_dump(self):
         kobj = KadetTestObj(name="testObj", size=5)
-        output = kobj.to_dict()
+        output = kobj.dump()
         desired_output = {
             "name": "testObj",
             "size": 5,
@@ -67,7 +71,7 @@ class KadetTest(unittest.TestCase):
 
     def test_inner(self):
         kobj = KadetTestObjWithInner(name="testWithInnerObj", size=6)
-        output = kobj.to_dict()
+        output = kobj.dump()
         desired_output = {
             "name": "testWithInnerObj",
             "size": 6,
@@ -85,10 +89,9 @@ class KadetTest(unittest.TestCase):
     def test_root_list(self):
         kobj = BaseObj()
         kobj.root = [1, 2, 3, "a", False]
-        output = kobj.to_dict()
+        output = kobj.dump()
         desired_output = [1, 2, 3, "a", False]
         self.assertEqual(output, desired_output)
-
 
     def test_lists(self):
         kobj = KadetTestObj(name="testObj", size=5)
@@ -104,7 +107,7 @@ class KadetTest(unittest.TestCase):
                 }
             ),
         ]
-        output = kobj.to_dict()
+        output = kobj.dump()
         desired_output = {
             "name": "testObj",
             "size": 5,
@@ -126,30 +129,32 @@ class KadetTest(unittest.TestCase):
     def test_need(self):
         with self.assertRaises(ValueError):
             KadetTestObj(this_should_error=True)
+        with self.assertRaises(AssertionError):
+            KadetTestObj(name="stone", size="huge")
 
-    def test_update_root_yaml(self):
+    def test_skel_yaml(self):
         yaml_file = tempfile.mktemp(suffix=".yml")
         with open(yaml_file, "w") as fp:
             fp.write("this: that\nlist: [1,2,3]\n")
 
         class KadetObjFromYaml(BaseObj):
             def new(self):
-                self.update_root(yaml_file)
+                self.root_file(yaml_file)
 
-        output = KadetObjFromYaml().to_dict()
+        output = KadetObjFromYaml().dump()
         desired_output = {"this": "that", "list": [1, 2, 3]}
         self.assertEqual(output, desired_output)
 
-    def test_update_root_json(self):
+    def test_skel_json(self):
         json_file = tempfile.mktemp(suffix=".json")
         with open(json_file, "w") as fp:
             fp.write('{"this": "that", "list": [1,2,3]}')
 
         class KadetObjFromYaml(BaseObj):
             def new(self):
-                self.update_root(json_file)
+                self.root_file(json_file)
 
-        output = KadetObjFromYaml().to_dict()
+        output = KadetObjFromYaml().dump()
         desired_output = {"this": "that", "list": [1, 2, 3]}
         self.assertEqual(output, desired_output)
 
@@ -159,7 +164,7 @@ class KadetTest(unittest.TestCase):
             fp.write('{"this": "that", "list": [1,2,3]}')
 
         kobj = BaseObj.from_json(json_file)
-        output = kobj.to_dict()
+        output = kobj.dump()
         desired_output = {"this": "that", "list": [1, 2, 3]}
         self.assertEqual(output, desired_output)
 
@@ -169,6 +174,6 @@ class KadetTest(unittest.TestCase):
             fp.write("this: that\nlist: [1,2,3]\n")
 
         kobj = BaseObj.from_yaml(yaml_file)
-        output = kobj.to_dict()
+        output = kobj.dump()
         desired_output = {"this": "that", "list": [1, 2, 3]}
         self.assertEqual(output, desired_output)

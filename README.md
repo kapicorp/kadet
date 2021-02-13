@@ -1,42 +1,35 @@
-# Kadet is a module to easily define and reuse complex Python objects that serialize into JSON or YAML.
-
-You can do this
+# Easily define and reuse complex Python objects that serialize into JSON or YAML.
 
 ```python
 from kadet import BaseObj
 from pprint import pprint
 
 ships = BaseObj()
-ships.root.type.container = ["panamax", "suezmax", "post-panamax", "post-suezmax", "post-malaccamax"]
-ships.root.type.carrier = ["conventional", "geared", "gearless", "self-discharing", "lakers", "bibo"]
-ships.root.type.tanker = ["oil", "liquified-gas", "chemical", "product"]
-ships.root.type.passenger = ["liner", "cruise", "pilgrimage", "ferry"]
+ships.root.type.container = ["panamax", "suezmax", "post-panamax"]
+ships.root.type.carrier = ["conventional", "geared", "gearless"]
+ships.root.type.passenger = ["liner", "cruise", "pilgrimage"]
 
 pprint(ships)
 
 # output
 {'type': {'carrier': ['conventional',
                       'geared',
-                      'gearless',
-                      'self-discharing',
-                      'lakers',
-                      'bibo'],
+                      'gearless'],
           'container': ['panamax',
                         'suezmax',
-                        'post-panamax',
-                        'post-suezmax',
-                        'post-malaccamax'],
-          'passenger': ['liner', 'cruise', 'pilgrimage', 'ferry'],
-          'tanker': ['oil', 'liquified-gas', 'chemical', 'product']}}
+                        'post-panamax'],
+          'tanker': ['oil', 'liquified-gas', 'chemical']}}
 ```
 
 
 # Overview
 
 ## BaseObj
+
 BaseObj implements the basic object that serializes into JSON or YAML.
 Setting keys in `self.root` means they will be serialized. Keys can be set as an hierarchy of attributes.
-The `self.body()` method is reserved for setting self.root on instantiation:
+
+The `self.body()` method is reserved for setting self.root on instantiation.
 
 The example below:
 
@@ -46,6 +39,8 @@ class MyApp(BaseObj):
     self.root.name = "myapp"
     self.root.inner.foo = "bar"
     self.root.list = [1, 2, 3]
+
+yaml.dump(MyApp().dump())
 ```
 
 serializes into:
@@ -62,8 +57,11 @@ list:
 ```
 
 The `self.new()` method can be used to define a basic constructor.
-`self.need()` checks if a key is set and errors if it isn't (with an optional custom error message). 
+
+`self.need()` checks if a key is set and errors if it isn't (with an optional custom error message).
+
 `kwargs` that are passed onto a new instance of BaseObj are always accessible via `self.kwargs`
+
 In this example, MyApp needs `name` and `foo` to be passed as kwargs.
 
 ```python
@@ -81,10 +79,13 @@ obj = MyApp(name="myapp", foo="bar")
 ```
 
 ## Setting a skeleton
+
 Defining a large body with Python can be quite hard and repetitive to read and write.
-The `self.update_root()` method allows importing a YAML/JSON file to set the skeleton of self.root.
+
+The `self.root_file()` method allows importing a YAML/JSON file to set self.root.
 
 MyApp's skeleton can be set instead like this:
+
 ```yaml
 #skel.yml
 ---
@@ -102,17 +103,17 @@ class MyApp(BaseObj):
   def new(self):
     self.need("name")
     self.need("foo", msg="please provide a value for foo")
-    self.update_root("path/to/skel.yml")
+    self.root_file("path/to/skel.yml")
 ```
 
-Extending a skeleton'd MyApp is possible just by implementing `self.body()`:
+Extending a MyApp's skeleton is possible just by implementing `self.body()`:
 
 ```python
 class MyApp(BaseObj):
   def new(self):
     self.need("name")
     self.need("foo", msg="please provide a value for foo")
-    self.update_root("path/to/skel.yml")
+    self.root_file("path/to/skel.yml")
 
   def body(self):
     self.set_replicas()
@@ -123,6 +124,7 @@ class MyApp(BaseObj):
 ```
 
 ### Inheritance
+
 Python inheritance will work as expected:
 
 ```python
@@ -138,6 +140,7 @@ class MyOtherApp(MyApp):
     del self.root.list  # get rid of "list"
 
 obj = MyOtherApp(name="otherapp1", foo="bar2", size=3)
+yaml.dump(obj.dump())
 ```
 serializes to:
 
