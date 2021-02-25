@@ -6,16 +6,16 @@ import yaml
 
 class Dict(defaultdict):
     def __getattr__(self, name):
-        return defaultdict.__getitem__(self, name)
+        return self.__getitem__(name)
 
     def __setattr__(self, name, value):
-        return defaultdict.__setitem__(self, name, value)
+        return self.__setitem__(name, value)
 
     def __repr__(self):
         return dict.__repr__(self)
 
     def __init__(self, from_dict=None):
-        super(Dict, self).__init__(Dict)
+        super().__init__(Dict)
         if from_dict:
             assert isinstance(from_dict, dict), "from_dict is not of type dict"
             self.update(from_dict)
