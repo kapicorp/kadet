@@ -9,6 +9,8 @@ class Dict(defaultdict):
         return self.__getitem__(name)
 
     def __setattr__(self, name, value):
+        if type(value) == dict:
+            value = Dict(from_dict=value)
         return self.__setitem__(name, value)
 
     def __repr__(self):
