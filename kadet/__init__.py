@@ -65,6 +65,17 @@ class BaseObj(object):
             return cls.from_dict(yaml_obj)
 
     @classmethod
+    def from_yaml_multidoc(cls, file_path):
+        """
+        returns list generator of BaseObjs initialised with yaml content
+        from file_path
+        """
+        with open(file_path) as fp:
+            yaml_objs = yaml.safe_load_all(fp)
+            for yaml_obj in yaml_objs:
+                yield cls.from_dict(yaml_obj)
+
+    @classmethod
     def from_dict(cls, dict_value):
         """
         returns a BaseObj initialise with dict_value

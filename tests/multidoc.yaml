@@ -1,0 +1,16 @@
+---
+name: doc1
+keys:
+  a: b
+values:
+  - 1
+  - 2
+  - 3
+---
+name: doc2
+keys:
+  c: d
+values:
+  - 4
+  - 5
+  - 6
