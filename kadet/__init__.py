@@ -173,5 +173,7 @@ class BaseObj(object):
         return self._dump(self)
 
     def sha256(self):
+        """
+        returns sha256 hexdigest for self.root
+        """
         return hashlib.sha256(str(self.dump()).encode()).hexdigest()
-
