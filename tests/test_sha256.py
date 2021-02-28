@@ -5,7 +5,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"multidoc tests"
+"sha256 tests"
 
 import unittest
 from kadet import BaseObj
