@@ -1,4 +1,5 @@
 from collections import defaultdict
+import hashlib
 import json
 
 import yaml
@@ -146,8 +147,12 @@ class BaseObj(object):
             else:
                 for k, v in obj.root.items():
                     obj.root[k] = self._dump(v)
+                if isinstance(obj.root, dict):
+                    # root is just a dict, return itself
+                    return obj.root
                 # BaseObj needs to return dump()
-                return obj.root.dump()
+                else:
+                    return obj.root.dump()
         elif isinstance(obj, list):
             obj = [self._dump(item) for item in obj]
             # list has no .dump, return itself
@@ -166,3 +171,7 @@ class BaseObj(object):
         returns object dict/list
         """
         return self._dump(self)
+
+    def sha256(self):
+        return hashlib.sha256(str(self.dump()).encode()).hexdigest()
+
