@@ -1,0 +1,10 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: kadet
+Upstream-Contact: Ricardo Amaro <ramaro@kapicorp.com>
+Source: https://github.com/kapicorp/kadet
+
+# Sample paragraph, commented out:
+#
+# Files: src/*
+# Copyright: $YEAR $NAME <$CONTACT>
+# License: ...
