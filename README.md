@@ -1,4 +1,10 @@
-# Easily define and reuse complex Python objects that serialize into JSON or YAML.
+# kadet
+
+Easily define and reuse complex Python objects that serialize into JSON or YAML.
+
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/kapicorp/kadet/Python%20lint%20and%20tests)
+
+## Example
 
 ```python
 from kadet import BaseObj
@@ -21,10 +27,13 @@ pprint(ships)
           'tanker': ['oil', 'liquified-gas', 'chemical']}}
 ```
 
+## Installation
 
-# Overview
+Install using `pip install kadet`.
 
-## BaseObj
+## Overview
+
+### BaseObj
 
 BaseObj implements the basic object that serializes into JSON or YAML.
 Setting keys in `self.root` means they will be serialized. Keys can be set as an hierarchy of attributes.
@@ -78,7 +87,7 @@ class MyApp(BaseObj):
 obj = MyApp(name="myapp", foo="bar")
 ```
 
-## Setting a skeleton
+### Setting a skeleton
 
 Defining a large body with Python can be quite hard and repetitive to read and write.
 
