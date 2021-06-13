@@ -5,21 +5,31 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"kadet tests"
+"""kadet tests."""
 
 import tempfile
 import unittest
+
 from kadet import BaseObj, Dict
 
 
 class KadetTestObj(BaseObj):
+    """KadetTestObj."""
+
     def new(self):
+        """new."""
         self.need("name", "Need a name string")
         self.need("size", "Need a size int", istype=int)
+        self.optional("quantity", istype=int)
+        self.optional("description", default="default description", istype=str)
 
     def body(self):
+        """body."""
         self.root.name = self.kwargs.name
         self.root.size = self.kwargs.size
+        self.root.description = self.kwargs.description
+        if self.kwargs.quantity is not None:
+            self.root.quantity = self.kwargs.quantity
         self.root.first_key = 1
         self.root.nested.first_key = 2
         self.root["traditional_key"] = 3
@@ -32,33 +42,45 @@ class KadetTestObj(BaseObj):
 
 
 class KadetTestObjWithInner(KadetTestObj):
+    """KadetTestObjWithInner."""
+
     def body(self):
+        """body."""
         super().body()
 
         class Inner(BaseObj):  # noqa E306
+            """Inner."""
+
             def body(self):
+                """body."""
                 self.root.i_am_inside = True
 
         self.root.inner = Inner()
 
 
 class KadetTest(unittest.TestCase):
+    """KadetTest."""
+
     def test_parse_kwargs(self):
+        """test_parse_kwargs."""
         kobj = BaseObj.from_dict({"this": "that", "not_hidden": True})
         output = kobj.dump()
         desired_output = {"this": "that", "not_hidden": True}
         self.assertEqual(output, desired_output)
 
     def test_from_dict_assertion(self):
-        with self.assertRaises(AssertionError):
+        """test_from_dict_assertion."""
+        with self.assertRaises(TypeError):
             BaseObj.from_dict(["this", "is", "not", "a", "dict"])
 
     def test_dump(self):
+        """test_dump."""
         kobj = KadetTestObj(name="testObj", size=5)
         output = kobj.dump()
         desired_output = {
             "name": "testObj",
             "size": 5,
+            "description": "default description",
             "first_key": 1,
             "traditional_key": 3,
             "nested": {"first_key": 2},
@@ -70,12 +92,14 @@ class KadetTest(unittest.TestCase):
         self.assertEqual(output, desired_output)
 
     def test_inner(self):
+        """test_inner."""
         kobj = KadetTestObjWithInner(name="testWithInnerObj", size=6)
         output = kobj.dump()
         desired_output = {
             "name": "testWithInnerObj",
             "size": 6,
             "first_key": 1,
+            "description": "default description",
             "traditional_key": 3,
             "nested": {"first_key": 2},
             "with_dict": {"A": "dict"},
@@ -87,6 +111,7 @@ class KadetTest(unittest.TestCase):
         self.assertEqual(output, desired_output)
 
     def test_root_list(self):
+        """test_root_list."""
         kobj = BaseObj()
         kobj.root = [1, 2, 3, "a", False]
         output = kobj.dump()
@@ -94,6 +119,7 @@ class KadetTest(unittest.TestCase):
         self.assertEqual(output, desired_output)
 
     def test_lists(self):
+        """test_lists."""
         kobj = KadetTestObj(name="testObj", size=5)
         kobj.root.with_lists = [
             Dict({"i_am_inside_a_list": True}),
@@ -111,6 +137,7 @@ class KadetTest(unittest.TestCase):
         desired_output = {
             "name": "testObj",
             "size": 5,
+            "description": "default description",
             "first_key": 1,
             "traditional_key": 3,
             "nested": {"first_key": 2},
@@ -127,18 +154,49 @@ class KadetTest(unittest.TestCase):
         self.assertEqual(output, desired_output)
 
     def test_need(self):
+        """test_need."""
         with self.assertRaises(ValueError):
             KadetTestObj(this_should_error=True)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             KadetTestObj(name="stone", size="huge")
 
+    def test_optional_typerror(self):
+        """test_optional."""
+        with self.assertRaises(TypeError):
+            KadetTestObj(name="stone", size=2, quantity="three")
+
+    def test_optional(self):
+        """test_optional."""
+        kobj = KadetTestObj(name="stone", size=2, quantity=3)
+        output = kobj.dump()
+
+        desired_output = {
+            "name": "stone",
+            "size": 2,
+            "quantity": 3,
+            "description": "default description",
+            "first_key": 1,
+            "traditional_key": 3,
+            "nested": {"first_key": 2},
+            "with_dict": {"A": "dict"},
+            "with_baseobj_init_as": {"init": "as"},
+            "with_baseobj": {"inside": "BaseObj"},
+            "with_another_dict": {"Another": "Dict"},
+        }
+
+        self.assertEqual(output, desired_output)
+
     def test_skel_yaml(self):
+        """test_skel_yaml."""
         yaml_file = tempfile.mktemp(suffix=".yml")
         with open(yaml_file, "w") as fp:
             fp.write("this: that\nlist: [1,2,3]\n")
 
         class KadetObjFromYaml(BaseObj):
+            """KadetObjFromYaml."""
+
             def new(self):
+                """new."""
                 self.root_file(yaml_file)
 
         output = KadetObjFromYaml().dump()
@@ -146,12 +204,16 @@ class KadetTest(unittest.TestCase):
         self.assertEqual(output, desired_output)
 
     def test_skel_json(self):
+        """test_skel_json."""
         json_file = tempfile.mktemp(suffix=".json")
         with open(json_file, "w") as fp:
             fp.write('{"this": "that", "list": [1,2,3]}')
 
         class KadetObjFromYaml(BaseObj):
+            """KadetObjFromYaml."""
+
             def new(self):
+                """new."""
                 self.root_file(json_file)
 
         output = KadetObjFromYaml().dump()
@@ -159,6 +221,7 @@ class KadetTest(unittest.TestCase):
         self.assertEqual(output, desired_output)
 
     def test_from_json(self):
+        """test_from_json."""
         json_file = tempfile.mktemp()
         with open(json_file, "w") as fp:
             fp.write('{"this": "that", "list": [1,2,3]}')
@@ -169,6 +232,7 @@ class KadetTest(unittest.TestCase):
         self.assertEqual(output, desired_output)
 
     def test_from_yaml(self):
+        """test_from_yaml."""
         yaml_file = tempfile.mktemp()
         with open(yaml_file, "w") as fp:
             fp.write("this: that\nlist: [1,2,3]\n")
