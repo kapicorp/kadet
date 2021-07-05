@@ -130,9 +130,7 @@ class BaseObj(object):
                 self.root = Dict(_copy)
             else:
                 # XXX in Kapitan this is CompileError
-                raise ValueError(
-                    "file_path is neither JSON or YAML: {}".format(file_path)
-                )
+                raise ValueError("file_path is neither JSON or YAML: {}".format(file_path))
 
     def need(self, key, msg="key and value needed", istype=None):
         """Require that key is in self.kwargs.
@@ -165,6 +163,17 @@ class BaseObj(object):
     def new(self):
         """Initialise need()ed keys for a new BaseObj."""
         pass
+
+    def new_with(self, **kwargs):
+        """new_with.
+
+        Parameters
+        ----------
+        kwargs :
+            kwargs
+        """
+        self.kwargs.update(kwargs)
+        super(type(self), self).new()
 
     def body(self):
         """Set values/logic for self.root."""
