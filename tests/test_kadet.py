@@ -89,6 +89,8 @@ class KadetTest(unittest.TestCase):
             "with_baseobj": {"inside": "BaseObj"},
             "with_another_dict": {"Another": "Dict"},
         }
+        self.assertIsInstance(output, dict)
+        self.assertNotIsInstance(output, Dict)
         self.assertEqual(output, desired_output)
 
     def test_inner(self):

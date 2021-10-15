@@ -178,14 +178,23 @@ class BaseObj(object):
                 # root is just a list, return itself
                 return obj.root
             else:
+                # Update all dict/Dict root items
                 for k, v in obj.root.items():
                     obj.root[k] = self._dump(v)
+
+                # return and dump leaf depending on instance type
+                #
+                if isinstance(obj.root, Dict):
+                    # root is Dict, dump as dict
+                    return obj.root.dump()
                 if isinstance(obj.root, dict):
                     # root is just a dict, return itself
                     return obj.root
                 # BaseObj needs to return dump()
                 else:
                     return obj.root.dump()
+        elif isinstance(obj, Dict):
+            return obj.dump()
         elif isinstance(obj, list):
             obj = [self._dump(item) for item in obj]
             # list has no .dump, return itself
