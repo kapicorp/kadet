@@ -58,6 +58,24 @@ class KadetTestObjWithInner(KadetTestObj):
         self.root.inner = Inner()
 
 
+class KadetTestObjExtendedNewKwargs(KadetTestObj):
+    """KadetTestObjExtendedNewKwargs."""
+
+    def new(self):
+        """new."""
+        super().new_with(name="test-with-new", size=12)
+
+
+class KadetTestObjExtendedNew(KadetTestObj):
+    """KadetTestObjExtendedNew."""
+
+    def new(self):
+        """new."""
+        self.kwargs.name = "test-with-new"
+        self.kwargs.size = 12
+        super().new()
+
+
 class KadetTest(unittest.TestCase):
     """KadetTest."""
 
@@ -159,6 +177,12 @@ class KadetTest(unittest.TestCase):
             KadetTestObj(this_should_error=True)
         with self.assertRaises(TypeError):
             KadetTestObj(name="stone", size="huge")
+
+    def test_new_with(self):
+        """test_new_with."""
+        output_new = KadetTestObjExtendedNew().dump()
+        output_new_with = KadetTestObjExtendedNewKwargs().dump()
+        self.assertEqual(output_new, output_new_with)
 
     def test_optional_typerror(self):
         """test_optional."""
