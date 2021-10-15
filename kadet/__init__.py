@@ -130,7 +130,9 @@ class BaseObj(object):
                 self.root = Dict(_copy)
             else:
                 # XXX in Kapitan this is CompileError
-                raise ValueError("file_path is neither JSON or YAML: {}".format(file_path))
+                raise ValueError(
+                    "file_path is neither JSON or YAML: {}".format(file_path)
+                )
 
     def need(self, key, msg="key and value needed", istype=None):
         """Require that key is in self.kwargs.
