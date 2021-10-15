@@ -15,7 +15,7 @@ ships.root.type.container = ["panamax", "suezmax", "post-panamax"]
 ships.root.type.carrier = ["conventional", "geared", "gearless"]
 ships.root.type.tanker = BaseObj.from_yaml("tankers.yml")
 
-pprint(ships)
+pprint(ships.root)
 
 # output
 {'type': {'carrier': ['conventional',
