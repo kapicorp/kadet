@@ -68,12 +68,14 @@ list:
 The `self.new()` method can be used to define a basic constructor.
 
 `self.need()` checks if a key is set and errors if it isn't (with an optional custom error message).
-`self.optional()` set a key as optional. Use `default` keyword to set default value when not set.
+`self.optional()` sets a key as optional. Use `default` keyword to set default value when not set.
 
 Both `self.new()` and `self.body()` method accept the `istype` keyword to validate value type on runtime.
 Supports `typing` types.
 
 `kwargs` that are passed onto a new instance of BaseObj are always accessible via `self.kwargs`
+
+`self.new_with()` is an utility method to call `super().new()` while passing kwargs to the super class.
 
 In this example, MyApp needs `name` and `foo` to be passed as kwargs.
 
