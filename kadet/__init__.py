@@ -5,8 +5,11 @@
 import hashlib
 import json
 from collections import defaultdict
+from types import SimpleNamespace
+from typing import ClassVar
 
 import yaml
+from pydantic import BaseModel
 from typeguard import check_type
 
 
@@ -226,3 +229,43 @@ class BaseObj(object):
     def sha256(self):
         """Return sha256 hexdigest for self.root."""
         return hashlib.sha256(str(self.dump()).encode()).hexdigest()
+
+
+class BaseModel(BaseModel):
+    # root: ClassVar = SimpleNamespace()  # hide root from repr, BaseObj/Dict broken atm
+    root: ClassVar = Dict()  # hide root from repr
+
+    def __init__(self, **data):
+        super().__init__(**data)
+
+        if hasattr(self, "new"):
+            assert callable(self.new)
+            self.new()
+
+        if hasattr(self, "body"):
+            assert callable(self.body)
+            self.body()
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} at {hex(id(self))} {self.__dict__}>"
+
+    class Config:
+        arbitrary_types_allowed = (
+            True  # allow all types e.g. BaseObj (although BaseObj breaks at the moment)
+        )
+        copy_on_model_validation = False  # performance?
+        underscore_attrs_are_private = True
+        extra = "allow"
+
+
+class A(BaseModel):
+    b: int
+    c: str = "default value"
+
+    def body(self):
+        self.root.key1 = self.b
+        self.root.key2 = self.c
+
+
+class B(A):
+    d: int
