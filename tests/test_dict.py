@@ -10,7 +10,7 @@
 import unittest
 from collections import defaultdict
 
-from kadet import Box, Dict
+from kadet import Dict
 
 
 class DictTest(unittest.TestCase):
