@@ -189,7 +189,7 @@ class Boat(BaseModel):
     self.root.details.length = self.length
     self.root.details.description = self.description
 
-print(yaml.dump(Boat(name="Boaty", lenght=600).dump()))
+print(yaml.dump(Boat(name="Boaty", length=600).dump()))
 
 ---
 details:
