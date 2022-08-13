@@ -13,6 +13,8 @@ from pydantic import BaseModel as PydanticBaseModel
 from pydantic import Extra
 from typeguard import check_type
 
+ABORT_EXCEPTION_TYPE = ValueError
+
 
 class Dict(Box):
     def __init__(self, *args, **kwargs):
@@ -104,7 +106,7 @@ class BaseObj(object):
                 self.root = Dict(_copy)
             else:
                 # XXX in Kapitan this is CompileError
-                raise ValueError(
+                raise ABORT_EXCEPTION_TYPE(
                     "file_path is neither JSON or YAML: {}".format(file_path)
                 )
 
@@ -116,7 +118,7 @@ class BaseObj(object):
         """
         err_msg = '{}: "{}": {}'.format(self.__class__.__name__, key, msg)
         if key not in self.kwargs:
-            raise ValueError(err_msg)  # XXX in Kapitan this is CompileError
+            raise ABORT_EXCEPTION_TYPE(err_msg)  # XXX in Kapitan this is CompileError
         elif istype is not None:
             check_type(key, self.kwargs[key], istype)
 
