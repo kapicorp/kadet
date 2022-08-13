@@ -4,7 +4,6 @@
 
 import hashlib
 import json
-from types import SimpleNamespace
 from typing import ClassVar
 
 import yaml
