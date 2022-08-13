@@ -171,7 +171,7 @@ size: 3
 
 ### BaseModel
 
-BaseModel integrates Kadet semanatics with [Pydantic's](https://github.com/pydantic/pydantic) BaseModel together with powerful data validation and type hinting features.
+BaseModel integrates Kadet semantics with [Pydantic's](https://github.com/pydantic/pydantic) BaseModel together with powerful data validation and type hinting features.
 Just like in BaseObj, keys in `self.root` will be serialized, but kwargs is no longer necessary as BaseModel's parameters are set as attributes in `self`.
 
 The `self.body()` method is reserved for setting self.root on instantiation.
