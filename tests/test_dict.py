@@ -10,7 +10,7 @@
 import unittest
 from collections import defaultdict
 
-from kadet import Dict
+from kadet import Box, Dict
 
 
 class DictTest(unittest.TestCase):
@@ -20,4 +20,4 @@ class DictTest(unittest.TestCase):
         self.assertIsInstance(base.foo, Dict)
 
         base.bar = defaultdict(str)
-        self.assertNotIsInstance(base.bar, Dict)
+        self.assertNotIsInstance(base.bar, defaultdict)
