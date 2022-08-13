@@ -4,59 +4,38 @@
 
 import hashlib
 import json
-from collections import defaultdict
+from typing import ClassVar
 
 import yaml
+from box import Box
+from pydantic import BaseModel as PydanticBaseModel
+from pydantic import Extra
 from typeguard import check_type
 
+ABORT_EXCEPTION_TYPE = ValueError
 
-class Dict(defaultdict):
-    """Dict."""
 
-    def __getattr__(self, name):
-        """__getattr__.
+class Dict(Box):
+    def __init__(self, *args, **kwargs):
+        # See https://github.com/cdgriffith/Box/issues/210
+        # Box options
+        kwargs["frozen_box"] = kwargs.get("frozen_box", False)
+        kwargs["default_box"] = True
+        kwargs["default_box_attr"] = Dict
+        kwargs["box_class"] = Dict
 
-        Parameters
-        ----------
-        name :
-            name of attribute to get
-        """
-        return self.__getitem__(name)
+        # Kadet Dict options
+        from_dict = kwargs.get("from_dict", None)
+        if from_dict:
+            kwargs.pop("from_dict")
 
-    def __setattr__(self, name, value):
-        """__setattr__.
-
-        Parameters
-        ----------
-        name :
-            name of attribute to set
-        value :
-            value of attribute to set
-        """
-        if type(value) == dict:
-            value = Dict(from_dict=value)
-        return self.__setitem__(name, value)
-
-    def __repr__(self):
-        """__repr__."""
-        return dict.__repr__(self)
-
-    def __init__(self, from_dict=None):
-        """__init__.
-
-        Parameters
-        ----------
-        from_dict :
-            dictionary to load from
-        """
-        super().__init__(Dict)
+        super().__init__(*args, **kwargs)
         if from_dict:
             check_type(from_dict, from_dict, dict)
             self.update(from_dict)
 
     def dump(self):
-        """Dump object to dict representation."""
-        return dict(self)
+        return self.to_dict()
 
 
 class BaseObj(object):
@@ -76,10 +55,6 @@ class BaseObj(object):
     def __str__(self):
         """__str__."""
         return str(self.dump())
-
-    def __repr__(self):
-        """__repr__."""
-        return f"<{self.__class__.__name__} at {hex(id(self))} {self.dump()}>"
 
     @classmethod
     def from_json(cls, file_path):
@@ -130,7 +105,7 @@ class BaseObj(object):
                 self.root = Dict(_copy)
             else:
                 # XXX in Kapitan this is CompileError
-                raise ValueError(
+                raise ABORT_EXCEPTION_TYPE(
                     "file_path is neither JSON or YAML: {}".format(file_path)
                 )
 
@@ -142,7 +117,7 @@ class BaseObj(object):
         """
         err_msg = '{}: "{}": {}'.format(self.__class__.__name__, key, msg)
         if key not in self.kwargs:
-            raise ValueError(err_msg)  # XXX in Kapitan this is CompileError
+            raise ABORT_EXCEPTION_TYPE(err_msg)  # XXX in Kapitan this is CompileError
         elif istype is not None:
             check_type(key, self.kwargs[key], istype)
 
@@ -183,7 +158,7 @@ class BaseObj(object):
 
     def _dump(self, obj):
         """Recursively update obj should it contain other BaseObj values."""
-        if isinstance(obj, BaseObj):
+        if isinstance(obj, (BaseObj, BaseModel)):
             if isinstance(obj.root, list):
                 obj.root = [self._dump(item) for item in obj.root]
                 # root is just a list, return itself
@@ -226,3 +201,84 @@ class BaseObj(object):
     def sha256(self):
         """Return sha256 hexdigest for self.root."""
         return hashlib.sha256(str(self.dump()).encode()).hexdigest()
+
+
+class BaseModel(PydanticBaseModel):
+    root: ClassVar = Dict()  # hide root from repr
+
+    def __init__(self, **data):
+        super().__init__(**data)
+
+        if hasattr(self, "new"):
+            assert callable(self.new)
+            self.new()
+
+        if hasattr(self, "body"):
+            assert callable(self.body)
+            self.body()
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} at {hex(id(self))} {self.__dict__}>"
+
+    def _dump(self, obj):
+        """Recursively update obj should it contain other BaseObj values."""
+        if isinstance(obj, (BaseObj, BaseModel)):
+            if isinstance(obj.root, list):
+                obj.root = [self._dump(item) for item in obj.root]
+                # root is just a list, return itself
+                return obj.root
+            else:
+                # Update all dict/Dict root items
+                for k, v in obj.root.items():
+                    obj.root[k] = self._dump(v)
+
+                # return and dump leaf depending on instance type
+                #
+                if isinstance(obj.root, Dict):
+                    # root is Dict, dump as dict
+                    return obj.root.dump()
+                if isinstance(obj.root, dict):
+                    # root is just a dict, return itself
+                    return obj.root
+                # BaseObj needs to return dump()
+                else:
+                    return obj.root.dump()
+        elif isinstance(obj, Dict):
+            return obj.dump()
+        elif isinstance(obj, list):
+            obj = [self._dump(item) for item in obj]
+            # list has no .dump, return itself
+            return obj
+        elif isinstance(obj, dict):
+            for k, v in obj.items():
+                obj[k] = self._dump(v)
+            # dict has no .dump, return itself
+            return obj
+
+        # anything else, return itself
+        return obj
+
+    def dump(self):
+        """Return object dict/list."""
+        return self._dump(self)
+
+    class Config:
+        arbitrary_types_allowed = (
+            True  # allow all types e.g. BaseObj (although BaseObj breaks at the moment)
+        )
+        copy_on_model_validation = False  # performance?
+        underscore_attrs_are_private = True
+        extra = Extra.allow
+
+
+class A(BaseModel):
+    b: int
+    c: str = "default value"
+
+    def body(self):
+        self.root.key1 = self.b
+        self.root.key2 = self.c
+
+
+class B(A):
+    d: int

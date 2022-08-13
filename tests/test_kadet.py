@@ -9,8 +9,35 @@
 
 import tempfile
 import unittest
+from typing import Optional
 
-from kadet import BaseObj, Dict
+from kadet import BaseModel, BaseObj, Dict
+
+
+class KadetTestModel(BaseModel):
+    name: str
+    size: int
+    quantity: Optional[int]
+    description: str = "default description"
+
+    def body(self):
+        # set root from model params
+        self.root.name = self.name
+        self.root.size = self.size
+        self.root.description = self.description
+        if self.quantity is not None:
+            self.root.quantity = self.quantity
+
+        # add extra root values
+        self.root.first_key = 1
+        self.root.nested.first_key = 2
+        self.root["traditional_key"] = 3
+        self.root.with_dict = {"A": "dict"}
+        self.root.with_baseobj_init_as = BaseObj.from_dict({"init": "as"})
+        bobj = BaseObj()
+        bobj.root.inside = "BaseObj"
+        self.root.with_baseobj = bobj
+        self.root.with_another_dict = Dict({"Another": "Dict"})
 
 
 class KadetTestObj(BaseObj):
@@ -266,4 +293,24 @@ class KadetTest(unittest.TestCase):
         kobj = BaseObj.from_yaml(yaml_file)
         output = kobj.dump()
         desired_output = {"this": "that", "list": [1, 2, 3]}
+        self.assertEqual(output, desired_output)
+
+    def test_model_dump(self):
+        """test_model_dump."""
+        kobj = KadetTestModel(name="testObj", size=5)
+        output = kobj.dump()
+        desired_output = {
+            "name": "testObj",
+            "size": 5,
+            "description": "default description",
+            "first_key": 1,
+            "traditional_key": 3,
+            "nested": {"first_key": 2},
+            "with_dict": {"A": "dict"},
+            "with_baseobj_init_as": {"init": "as"},
+            "with_baseobj": {"inside": "BaseObj"},
+            "with_another_dict": {"Another": "Dict"},
+        }
+        self.assertIsInstance(output, dict)
+        self.assertNotIsInstance(output, Dict)
         self.assertEqual(output, desired_output)

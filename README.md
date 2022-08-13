@@ -168,3 +168,32 @@ inner:
 replicas: 5
 size: 3
 ```
+
+### BaseModel
+
+BaseModel integrates Kadet semanatics with [Pydantic's](https://github.com/pydantic/pydantic) BaseModel together with powerful data validation and type hinting features.
+Just like in BaseObj, keys in `self.root` will be serialized, but kwargs is no longer necessary as BaseModel's parameters are set as attributes in `self`.
+
+The `self.body()` method is reserved for setting self.root on instantiation.
+
+The example below:
+
+```python
+class Boat(BaseModel):
+  name: str  # Required
+  length: int  # Required
+  description: str = "I am a boat"  # Default description
+
+  def body(self):
+    self.root.name = self.name
+    self.root.details.length = self.length
+    self.root.details.description = self.description
+
+print(yaml.dump(Boat(name="Boaty", lenght=600).dump()))
+
+---
+details:
+  description: I am a boat
+  length: 600
+name: Boaty
+```

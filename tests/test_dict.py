@@ -20,4 +20,4 @@ class DictTest(unittest.TestCase):
         self.assertIsInstance(base.foo, Dict)
 
         base.bar = defaultdict(str)
-        self.assertNotIsInstance(base.bar, Dict)
+        self.assertNotIsInstance(base.bar, defaultdict)
