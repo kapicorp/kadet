@@ -1,3 +1,4 @@
+---
 name: Upload Python Package
 
 on:
@@ -8,21 +9,18 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install setuptools wheel twine build
-    - name: Build, check and publish
-      env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      run: |
-        python -m build
-        twine check dist/*
-        twine upload dist/*
-        # twine upload --repository testpypi dist/*
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+      - uses: Gr1N/setup-poetry@v7
+      - name: Install poetry dependencies
+        run: |
+          poetry install
+      - name: Poetry build
+        run: |
+          poetry build
+      - name: Poetry publish to Pypi
+        run: |-
+          poetry publish -u ${{ secrets.PYPI_USERNAME}} -p ${{ secrets.PYPI_TOKEN }}
