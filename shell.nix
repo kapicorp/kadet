@@ -8,6 +8,8 @@ in pkgs.mkShell {
     pkgs.gnumake
     pkgs.act
     pkgs.poetry
+    pkgs.nodePackages.yaml-language-server
+    pkgs.yamlfix
 
     /* pkgs.docker */
 
