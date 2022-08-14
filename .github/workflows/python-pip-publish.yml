@@ -23,4 +23,4 @@ jobs:
           poetry build
       - name: Poetry publish to Pypi
         run: |-
-          poetry publish -u ${{ secrets.PYPI_USERNAME}} -p ${{ secrets.PYPI_TOKEN }}
+          poetry publish -u ${{ secrets.PYPI_USERNAME}} -p ${{ secrets.PYPI_PASSWORD }}
