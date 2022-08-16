@@ -11,8 +11,6 @@ in pkgs.mkShell {
     pkgs.nodePackages.yaml-language-server
     pkgs.yamlfix
 
-    /* pkgs.docker */
-
     # Python version
     pkgs.python39
     pkgs.python39.pkgs.pip
