@@ -7,7 +7,7 @@ import json
 from typing import ClassVar
 
 import yaml
-from box import Box
+from box import Box, BoxList
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic import Extra
 from typeguard import check_type
@@ -19,20 +19,11 @@ class Dict(Box):
     def __init__(self, *args, **kwargs):
         # See https://github.com/cdgriffith/Box/issues/210
         # Box options
-        kwargs["frozen_box"] = kwargs.get("frozen_box", False)
-        kwargs["default_box"] = True
+        kwargs["default_box"] = kwargs.get("default_box", True)
         kwargs["default_box_attr"] = Dict
-        kwargs["box_class"] = Dict
-
-        # Kadet Dict options
-        from_dict = kwargs.get("from_dict", None)
-        if from_dict:
-            kwargs.pop("from_dict")
+        kwargs["default_box_none_transform"] = False
 
         super().__init__(*args, **kwargs)
-        if from_dict:
-            check_type(from_dict, from_dict, dict)
-            self.update(from_dict)
 
     def dump(self):
         return self.to_dict()
@@ -82,7 +73,7 @@ class BaseObj(object):
     def from_dict(cls, dict_value):
         """Return a BaseObj initialise with dict_value."""
         bobj = cls()
-        bobj.root = Dict(from_dict=dict_value)
+        bobj.root = Dict(dict_value)
         return bobj
 
     def root_file(self, file_path):
@@ -181,7 +172,7 @@ class BaseObj(object):
                     return obj.root.dump()
         elif isinstance(obj, Dict):
             return obj.dump()
-        elif isinstance(obj, list):
+        elif isinstance(obj, (list, BoxList)):
             obj = [self._dump(item) for item in obj]
             # list has no .dump, return itself
             return obj
@@ -245,7 +236,7 @@ class BaseModel(PydanticBaseModel):
                     return obj.root.dump()
         elif isinstance(obj, Dict):
             return obj.dump()
-        elif isinstance(obj, list):
+        elif isinstance(obj, (list, BoxList)):
             obj = [self._dump(item) for item in obj]
             # list has no .dump, return itself
             return obj
@@ -263,22 +254,7 @@ class BaseModel(PydanticBaseModel):
         return self._dump(self)
 
     class Config:
-        arbitrary_types_allowed = (
-            True  # allow all types e.g. BaseObj (although BaseObj breaks at the moment)
-        )
+        arbitrary_types_allowed = True  # allow all types e.g. BaseObj
         copy_on_model_validation = False  # performance?
         underscore_attrs_are_private = True
         extra = Extra.allow
-
-
-class A(BaseModel):
-    b: int
-    c: str = "default value"
-
-    def body(self):
-        self.root.key1 = self.b
-        self.root.key2 = self.c
-
-
-class B(A):
-    d: int

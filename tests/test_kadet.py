@@ -115,7 +115,7 @@ class KadetTest(unittest.TestCase):
 
     def test_from_dict_assertion(self):
         """test_from_dict_assertion."""
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValueError):
             BaseObj.from_dict(["this", "is", "not", "a", "dict"])
 
     def test_dump(self):
