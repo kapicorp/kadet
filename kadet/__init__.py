@@ -258,16 +258,3 @@ class BaseModel(PydanticBaseModel):
         copy_on_model_validation = False  # performance?
         underscore_attrs_are_private = True
         extra = Extra.allow
-
-
-class A(BaseModel):
-    b: int
-    c: str = "default value"
-
-    def body(self):
-        self.root.key1 = self.b
-        self.root.key2 = self.c
-
-
-class B(A):
-    d: int
