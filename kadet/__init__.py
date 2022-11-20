@@ -195,10 +195,11 @@ class BaseObj(object):
 
 
 class BaseModel(PydanticBaseModel):
-    root: ClassVar = Dict()  # hide root from repr
+    root: ClassVar  # hide root from repr
 
     def __init__(self, **data):
         super().__init__(**data)
+        self.root = Dict()  # initialise empty root
 
         if hasattr(self, "new"):
             assert callable(self.new)
