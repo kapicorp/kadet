@@ -40,6 +40,23 @@ class KadetTestModel(BaseModel):
         self.root.with_another_dict = Dict({"Another": "Dict"})
 
 
+class KadetTestExtendedModel(KadetTestModel):
+    name = "hello"
+    size = 3
+
+
+class KadetTestNewBodyModel(KadetTestModel):
+    name = "hello"
+    size = 3
+
+    def body(self):
+        # Extend KadetTestModel and redefine body
+        self.root.name = self.name
+        self.root.size = self.size
+        self.root.description = self.description
+        self.root.a = 4
+
+
 class KadetTestObj(BaseObj):
     """KadetTestObj."""
 
@@ -310,6 +327,40 @@ class KadetTest(unittest.TestCase):
             "with_baseobj_init_as": {"init": "as"},
             "with_baseobj": {"inside": "BaseObj"},
             "with_another_dict": {"Another": "Dict"},
+        }
+        self.assertIsInstance(output, dict)
+        self.assertNotIsInstance(output, Dict)
+        self.assertEqual(output, desired_output)
+
+    def test_extended_model_dump(self):
+        """test_extended_model_dump."""
+        kobj = KadetTestExtendedModel()
+        output = kobj.dump()
+        desired_output = {
+            "name": "hello",
+            "size": 3,
+            "description": "default description",
+            "first_key": 1,
+            "traditional_key": 3,
+            "nested": {"first_key": 2},
+            "with_dict": {"A": "dict"},
+            "with_baseobj_init_as": {"init": "as"},
+            "with_baseobj": {"inside": "BaseObj"},
+            "with_another_dict": {"Another": "Dict"},
+        }
+        self.assertIsInstance(output, dict)
+        self.assertNotIsInstance(output, Dict)
+        self.assertEqual(output, desired_output)
+
+    def test_new_body_model_dump(self):
+        """test_new_body_model_dump"""
+        kobj = KadetTestNewBodyModel()
+        output = kobj.dump()
+        desired_output = {
+            "name": "hello",
+            "size": 3,
+            "description": "default description",
+            "a": 4,
         }
         self.assertIsInstance(output, dict)
         self.assertNotIsInstance(output, Dict)
