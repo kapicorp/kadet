@@ -8,8 +8,7 @@ from typing import ClassVar
 
 import yaml
 from box import Box, BoxList
-from pydantic import BaseModel as PydanticBaseModel
-from pydantic import Extra
+from pydantic import ConfigDict, BaseModel as PydanticBaseModel
 from typeguard import check_type
 
 ABORT_EXCEPTION_TYPE = ValueError
@@ -253,9 +252,6 @@ class BaseModel(PydanticBaseModel):
     def dump(self):
         """Return object dict/list."""
         return self._dump(self)
-
-    class Config:
-        arbitrary_types_allowed = True  # allow all types e.g. BaseObj
-        copy_on_model_validation = False  # performance?
-        underscore_attrs_are_private = True
-        extra = Extra.allow
+    # TODO[pydantic]: The following keys were removed: `copy_on_model_validation`, `underscore_attrs_are_private`.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
+    model_config = ConfigDict(arbitrary_types_allowed=True, copy_on_model_validation=False, underscore_attrs_are_private=True, extra="allow")
