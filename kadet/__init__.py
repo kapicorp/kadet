@@ -5,9 +5,11 @@
 import hashlib
 import json
 from typing import Annotated
+
 import yaml
 from box import Box, BoxList
-from pydantic import BaseModel as PydanticBaseModel, Field
+from pydantic import BaseModel as PydanticBaseModel
+from pydantic import Field
 from typeguard import check_type
 
 ABORT_EXCEPTION_TYPE = ValueError
@@ -194,6 +196,11 @@ class BaseObj(object):
 
 class BaseModel(PydanticBaseModel):
     root: Annotated[Dict, Field(repr=False)] = Dict()
+    model_config: Dict = {
+        # https://docs.pydantic.dev/latest/migration/#changes-to-config
+        "arbitrary_types_allowed": True,
+        "extra": "allow",
+    }
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -250,9 +257,3 @@ class BaseModel(PydanticBaseModel):
     def dump(self):
         """Return object dict/list."""
         return self._dump(self)
-
-    class Config:
-        arbitrary_types_allowed = True  # allow all types e.g. BaseObj
-        copy_on_model_validation = False  # performance?
-        underscore_attrs_are_private = True
-        extra = "allow"
