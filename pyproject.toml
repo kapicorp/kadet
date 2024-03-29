@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kadet"
-version = "0.2.2"
+version = "0.3.0"
 description = "Easily define and reuse complex Python objects that serialize into JSON or YAML."
 homepage = "https://github.com/kapicorp/kadet"
 repository = "https://github.com/kapicorp/kadet"
