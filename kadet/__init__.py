@@ -4,7 +4,7 @@
 
 import hashlib
 import json
-from typing import Any, Annotated
+from typing import Annotated
 import yaml
 from box import Box, BoxList
 from pydantic import BaseModel as PydanticBaseModel, Field

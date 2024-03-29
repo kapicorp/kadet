@@ -25,7 +25,7 @@ jobs:
 
       - name: Lint with flake8
         run: |
-          flake8 --max-line-length=120 --statistics --show-source .
+          flake8 --statistics --show-source .
 
       - name: Lint with black
         run: |
