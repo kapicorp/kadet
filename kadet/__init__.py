@@ -4,7 +4,7 @@
 
 import hashlib
 import json
-from typing import Any, Annotated 
+from typing import Any, Annotated
 import yaml
 from box import Box, BoxList
 from pydantic import BaseModel as PydanticBaseModel, Field
@@ -255,4 +255,4 @@ class BaseModel(PydanticBaseModel):
         arbitrary_types_allowed = True  # allow all types e.g. BaseObj
         copy_on_model_validation = False  # performance?
         underscore_attrs_are_private = True
-        extra = 'allow'
+        extra = "allow"
