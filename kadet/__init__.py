@@ -4,12 +4,12 @@
 
 import hashlib
 import json
-from typing import ClassVar
+from typing import Annotated
 
 import yaml
 from box import Box, BoxList
 from pydantic import BaseModel as PydanticBaseModel
-from pydantic import Extra
+from pydantic import Field
 from typeguard import check_type
 
 ABORT_EXCEPTION_TYPE = ValueError
@@ -110,7 +110,7 @@ class BaseObj(object):
         if key not in self.kwargs:
             raise ABORT_EXCEPTION_TYPE(err_msg)  # XXX in Kapitan this is CompileError
         elif istype is not None:
-            check_type(key, self.kwargs[key], istype)
+            check_type(self.kwargs[key], istype)
 
     def optional(self, key, default=None, istype=None):
         """Set self.kwargs key as optional.
@@ -119,13 +119,13 @@ class BaseObj(object):
         match type passed in istype.
         """
         if key in self.kwargs and istype is not None:
-            check_type(key, self.kwargs[key], istype)
+            check_type(self.kwargs[key], istype)
 
         if key not in self.kwargs:
             if default is None:
                 self.kwargs[key] = default
             elif istype is not None:
-                check_type(key, default, istype)
+                check_type(default, istype)
                 self.kwargs[key] = default
 
     def new(self):
@@ -195,11 +195,15 @@ class BaseObj(object):
 
 
 class BaseModel(PydanticBaseModel):
-    root: ClassVar  # hide root from repr
+    root: Annotated[Dict, Field(repr=False)] = Dict()
+    model_config: Dict = {
+        # https://docs.pydantic.dev/latest/migration/#changes-to-config
+        "arbitrary_types_allowed": True,
+        "extra": "allow",
+    }
 
     def __init__(self, **data):
         super().__init__(**data)
-        self.root = Dict()  # initialise empty root
 
         if hasattr(self, "new"):
             assert callable(self.new)
@@ -253,9 +257,3 @@ class BaseModel(PydanticBaseModel):
     def dump(self):
         """Return object dict/list."""
         return self._dump(self)
-
-    class Config:
-        arbitrary_types_allowed = True  # allow all types e.g. BaseObj
-        copy_on_model_validation = False  # performance?
-        underscore_attrs_are_private = True
-        extra = Extra.allow

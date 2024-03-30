@@ -10,6 +10,7 @@
 import tempfile
 import unittest
 from typing import Optional
+from typeguard import TypeCheckError
 
 from kadet import BaseModel, BaseObj, Dict
 
@@ -17,7 +18,7 @@ from kadet import BaseModel, BaseObj, Dict
 class KadetTestModel(BaseModel):
     name: str
     size: int
-    quantity: Optional[int]
+    quantity: Optional[int] = None
     description: str = "default description"
 
     def body(self):
@@ -41,13 +42,13 @@ class KadetTestModel(BaseModel):
 
 
 class KadetTestExtendedModel(KadetTestModel):
-    name = "hello"
-    size = 3
+    name: str = "hello"
+    size: int = 3
 
 
 class KadetTestNewBodyModel(KadetTestModel):
-    name = "hello"
-    size = 3
+    name: str = "hello"
+    size: int = 3
 
     def body(self):
         # Extend KadetTestModel and redefine body
@@ -221,7 +222,7 @@ class KadetTest(unittest.TestCase):
         """test_need."""
         with self.assertRaises(ValueError):
             KadetTestObj(this_should_error=True)
-        with self.assertRaises(TypeError):
+        with self.assertRaises(TypeCheckError):
             KadetTestObj(name="stone", size="huge")
 
     def test_new_with(self):
@@ -232,7 +233,7 @@ class KadetTest(unittest.TestCase):
 
     def test_optional_typerror(self):
         """test_optional."""
-        with self.assertRaises(TypeError):
+        with self.assertRaises(TypeCheckError):
             KadetTestObj(name="stone", size=2, quantity="three")
 
     def test_optional(self):
