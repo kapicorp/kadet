@@ -195,7 +195,7 @@ class BaseObj(object):
 
 
 class BaseModel(PydanticBaseModel):
-    root: Annotated[Dict, Field(repr=False)] = Dict()
+    root: Annotated[Dict, Field(repr=False, exclude=True)] = Dict()
     model_config: Dict = {
         # https://docs.pydantic.dev/latest/migration/#changes-to-config
         "arbitrary_types_allowed": True,
