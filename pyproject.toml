@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kadet"
-version = "0.3.1"
+version = "0.3.2"
 description = "Easily define and reuse complex Python objects that serialize into JSON or YAML."
 homepage = "https://github.com/kapicorp/kadet"
 repository = "https://github.com/kapicorp/kadet"
@@ -22,7 +22,7 @@ classifiers = [
 python = '>=3.10'
 PyYAML = ">=5.3.1"
 typeguard = ">=3.0.0"
-python-box = "6.0.2"
+python-box = ">6.0.0"
 pydantic = ">=2.0"
 
 [tool.poetry.group.dev]
