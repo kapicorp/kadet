@@ -1,13 +1,14 @@
-[tool.poetry]
+[project]
 name = "kadet"
 version = "0.3.2"
 description = "Easily define and reuse complex Python objects that serialize into JSON or YAML."
-homepage = "https://github.com/kapicorp/kadet"
-repository = "https://github.com/kapicorp/kadet"
 readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
 keywords = ["config", "kapitan", "kadet", "yaml", "json"]
-authors = ["Ricardo Amaro <ramaro@kapicorp.com>"]
-license = "Apache License 2.0"
+authors = [
+    { name = "Ricardo Amaro", email = "ramaro@kapicorp.com" },
+]
 classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: Apache Software License",
@@ -15,25 +16,41 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+dependencies = [
+    "PyYAML>=5.3.1",
+    "typeguard>=3.0.0",
+    "python-box>6.0.0",
+    "pydantic>=2.0",
+]
 
-[tool.poetry.dependencies]
-python = '>=3.10'
-PyYAML = ">=5.3.1"
-typeguard = ">=3.0.0"
-python-box = ">6.0.0"
-pydantic = ">=2.0"
+[project.urls]
+Homepage = "https://github.com/kapicorp/kadet"
+Repository = "https://github.com/kapicorp/kadet"
 
-[tool.poetry.group.dev]
-optional = true
-
-[tool.poetry.group.dev.dependencies]
-flake8 = "^7.0.0"
-pytest = "^8.1.1"
-black = ">=24.3,<27.0"
-pre-commit = "^3.7.0"
+[dependency-groups]
+dev = [
+    "pytest>=8.1.1",
+    "ruff>=0.6.0",
+    "pre-commit>=3.7.0",
+    "coverage>=7.0",
+]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["kadet"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.ruff.format]
+quote-style = "double"
