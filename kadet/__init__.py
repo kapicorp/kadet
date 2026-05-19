@@ -8,6 +8,13 @@ from typing import Annotated
 
 import yaml
 from box import Box, BoxList
+
+# Prefer the libyaml-backed C loader when available (3-10x faster, lower
+# memory). Fall back to the pure-Python loader otherwise.
+try:
+    _YamlSafeLoader = yaml.CSafeLoader
+except AttributeError:  # pragma: no cover - libyaml not built
+    _YamlSafeLoader = yaml.SafeLoader
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic import Field
 from typeguard import check_type
@@ -58,14 +65,14 @@ class BaseObj(object):
     def from_yaml(cls, file_path):
         """Return a BaseObj initialised with yaml content from file_path."""
         with open(file_path) as fp:
-            yaml_obj = yaml.safe_load(fp)
+            yaml_obj = yaml.load(fp, Loader=_YamlSafeLoader)
             return cls.from_dict(yaml_obj)
 
     @classmethod
     def from_yaml_multidoc(cls, file_path):
         """Return list generator of BaseObj initialised with file_path data."""
         with open(file_path) as fp:
-            yaml_objs = yaml.safe_load_all(fp)
+            yaml_objs = yaml.load_all(fp, Loader=_YamlSafeLoader)
             for yaml_obj in yaml_objs:
                 yield cls.from_dict(yaml_obj)
 
@@ -84,7 +91,7 @@ class BaseObj(object):
         """
         with open(file_path) as fp:
             if file_path.endswith(".yaml") or file_path.endswith(".yml"):
-                yaml_obj = yaml.safe_load(fp)
+                yaml_obj = yaml.load(fp, Loader=_YamlSafeLoader)
                 _copy = dict(self.root)
                 _copy.update(yaml_obj)
                 self.root = Dict(_copy)
