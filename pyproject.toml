@@ -30,7 +30,7 @@ optional = true
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^7.0.0"
-pytest = "^8.1.1"
+pytest = ">=8.1.1,<10.0.0"
 black = ">=24.3,<27.0"
 pre-commit = "^3.7.0"
 
