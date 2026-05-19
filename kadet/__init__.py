@@ -96,9 +96,7 @@ class BaseObj(object):
                 self.root = Dict(_copy)
             else:
                 # XXX in Kapitan this is CompileError
-                raise ABORT_EXCEPTION_TYPE(
-                    "file_path is neither JSON or YAML: {}".format(file_path)
-                )
+                raise ABORT_EXCEPTION_TYPE("file_path is neither JSON or YAML: {}".format(file_path))
 
     def need(self, key, msg="key and value needed", istype=None):
         """Require that key is in self.kwargs.

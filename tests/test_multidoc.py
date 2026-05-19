@@ -8,6 +8,7 @@
 "multidoc tests"
 
 import unittest
+
 from kadet import BaseObj
 
 

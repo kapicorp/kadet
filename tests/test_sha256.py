@@ -8,6 +8,7 @@
 "sha256 tests"
 
 import unittest
+
 from kadet import BaseObj
 
 
