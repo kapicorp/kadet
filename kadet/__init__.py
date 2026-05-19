@@ -72,8 +72,15 @@ class BaseObj(object):
     @classmethod
     def from_dict(cls, dict_value):
         """Return a BaseObj initialise with dict_value."""
-        bobj = cls()
-        bobj.root = Dict(dict_value)
+        # Build Dict first so invalid inputs (e.g. lists) raise before we
+        # allocate the instance, preserving prior error semantics.
+        root = Dict(dict_value)
+        # Bypass cls.__init__ to avoid running new()/body() on an empty
+        # object only to immediately overwrite self.root. This is a
+        # meaningful win for subclasses with non-trivial body().
+        bobj = cls.__new__(cls)
+        bobj.root = root
+        bobj.kwargs = Dict()
         return bobj
 
     def root_file(self, file_path):
