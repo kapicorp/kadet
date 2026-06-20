@@ -36,6 +36,7 @@ dev = [
     "ruff>=0.6.0",
     "pre-commit>=3.7.0",
     "coverage>=7.0",
+    "hypothesis>=6.100",
 ]
 
 [build-system]
