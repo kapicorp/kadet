@@ -188,8 +188,13 @@ class BaseObj(object):
         return self._dump(self)
 
     def sha256(self):
-        """Return sha256 hexdigest for self.root."""
-        return hashlib.sha256(str(self.dump()).encode()).hexdigest()
+        """Return sha256 hexdigest for self.root.
+
+        The dump is serialized canonically (keys sorted) so the digest
+        depends only on content, not on dict insertion order.
+        """
+        canonical = json.dumps(self.dump(), sort_keys=True, separators=(",", ":"), default=str)
+        return hashlib.sha256(canonical.encode()).hexdigest()
 
 
 class BaseModel(PydanticBaseModel):
