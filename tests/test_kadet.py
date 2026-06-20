@@ -237,6 +237,18 @@ class KadetTest(unittest.TestCase):
         with self.assertRaises(TypeCheckError):
             KadetTestObj(name="stone", size=2, quantity="three")
 
+    def test_optional_default_without_istype(self):
+        """optional() must apply default even when istype is omitted."""
+
+        class KadetObjOptionalDefault(BaseObj):
+            def new(self):
+                self.optional("colour", default="blue")
+
+            def body(self):
+                self.root.colour = self.kwargs.colour
+
+        self.assertEqual(KadetObjOptionalDefault().dump(), {"colour": "blue"})
+
     def test_optional(self):
         """test_optional."""
         kobj = KadetTestObj(name="stone", size=2, quantity=3)

@@ -29,6 +29,45 @@ class Dict(Box):
         return self.to_dict()
 
 
+def _dump(obj):
+    """Recursively update obj should it contain other BaseObj values."""
+    if isinstance(obj, (BaseObj, BaseModel)):
+        if isinstance(obj.root, list):
+            obj.root = [_dump(item) for item in obj.root]
+            # root is just a list, return itself
+            return obj.root
+        else:
+            # Update all dict/Dict root items
+            for k, v in obj.root.items():
+                obj.root[k] = _dump(v)
+
+            # return and dump leaf depending on instance type
+            #
+            if isinstance(obj.root, Dict):
+                # root is Dict, dump as dict
+                return obj.root.dump()
+            if isinstance(obj.root, dict):
+                # root is just a dict, return itself
+                return obj.root
+            # BaseObj needs to return dump()
+            else:
+                return obj.root.dump()
+    elif isinstance(obj, Dict):
+        return obj.dump()
+    elif isinstance(obj, (list, BoxList)):
+        obj = [_dump(item) for item in obj]
+        # list has no .dump, return itself
+        return obj
+    elif isinstance(obj, dict):
+        for k, v in obj.items():
+            obj[k] = _dump(v)
+        # dict has no .dump, return itself
+        return obj
+
+    # anything else, return itself
+    return obj
+
+
 class BaseObj(object):
     """BaseObj."""
 
@@ -116,15 +155,14 @@ class BaseObj(object):
         Use default value if set. Raise TypeError if key value does not
         match type passed in istype.
         """
-        if key in self.kwargs and istype is not None:
-            check_type(self.kwargs[key], istype)
+        if key in self.kwargs:
+            if istype is not None:
+                check_type(self.kwargs[key], istype)
+            return
 
-        if key not in self.kwargs:
-            if default is None:
-                self.kwargs[key] = default
-            elif istype is not None:
-                check_type(default, istype)
-                self.kwargs[key] = default
+        if default is not None and istype is not None:
+            check_type(default, istype)
+        self.kwargs[key] = default
 
     def new(self):
         """Initialise need()ed keys for a new BaseObj."""
@@ -145,47 +183,9 @@ class BaseObj(object):
         """Set values/logic for self.root."""
         pass
 
-    def _dump(self, obj):
-        """Recursively update obj should it contain other BaseObj values."""
-        if isinstance(obj, (BaseObj, BaseModel)):
-            if isinstance(obj.root, list):
-                obj.root = [self._dump(item) for item in obj.root]
-                # root is just a list, return itself
-                return obj.root
-            else:
-                # Update all dict/Dict root items
-                for k, v in obj.root.items():
-                    obj.root[k] = self._dump(v)
-
-                # return and dump leaf depending on instance type
-                #
-                if isinstance(obj.root, Dict):
-                    # root is Dict, dump as dict
-                    return obj.root.dump()
-                if isinstance(obj.root, dict):
-                    # root is just a dict, return itself
-                    return obj.root
-                # BaseObj needs to return dump()
-                else:
-                    return obj.root.dump()
-        elif isinstance(obj, Dict):
-            return obj.dump()
-        elif isinstance(obj, (list, BoxList)):
-            obj = [self._dump(item) for item in obj]
-            # list has no .dump, return itself
-            return obj
-        elif isinstance(obj, dict):
-            for k, v in obj.items():
-                obj[k] = self._dump(v)
-            # dict has no .dump, return itself
-            return obj
-
-        # anything else, return itself
-        return obj
-
     def dump(self):
         """Return object dict/list."""
-        return self._dump(self)
+        return _dump(self)
 
     def sha256(self):
         """Return sha256 hexdigest for self.root."""
@@ -214,44 +214,6 @@ class BaseModel(PydanticBaseModel):
     def __repr__(self):
         return f"<{self.__class__.__name__} at {hex(id(self))} {self.__dict__}>"
 
-    def _dump(self, obj):
-        """Recursively update obj should it contain other BaseObj values."""
-        if isinstance(obj, (BaseObj, BaseModel)):
-            if isinstance(obj.root, list):
-                obj.root = [self._dump(item) for item in obj.root]
-                # root is just a list, return itself
-                return obj.root
-            else:
-                # Update all dict/Dict root items
-                for k, v in obj.root.items():
-                    obj.root[k] = self._dump(v)
-
-                # return and dump leaf depending on instance type
-                #
-                if isinstance(obj.root, Dict):
-                    # root is Dict, dump as dict
-                    return obj.root.dump()
-                if isinstance(obj.root, dict):
-                    # root is just a dict, return itself
-                    return obj.root
-                # BaseObj needs to return dump()
-                else:
-                    return obj.root.dump()
-        elif isinstance(obj, Dict):
-            return obj.dump()
-        elif isinstance(obj, (list, BoxList)):
-            obj = [self._dump(item) for item in obj]
-            # list has no .dump, return itself
-            return obj
-        elif isinstance(obj, dict):
-            for k, v in obj.items():
-                obj[k] = self._dump(v)
-            # dict has no .dump, return itself
-            return obj
-
-        # anything else, return itself
-        return obj
-
     def dump(self):
         """Return object dict/list."""
-        return self._dump(self)
+        return _dump(self)
