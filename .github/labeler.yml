@@ -1,0 +1,30 @@
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docs/**'
+          - 'README.md'
+          - 'CHANGELOG.md'
+          - 'mkdocs.yml'
+
+github:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**'
+          - 'Makefile'
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'pyproject.toml'
+          - 'uv.lock'
+
+python:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'kadet/**/*.py'
+          - 'tests/**/*.py'
+
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'tests/**'
