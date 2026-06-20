@@ -3,6 +3,10 @@ Upstream-Name: kadet
 Upstream-Contact: Ricardo Amaro <ramaro@kapicorp.com>
 Source: https://github.com/kapicorp/kadet
 
+Files: CHANGELOG.md
+Copyright: 2026 The Kadet Authors <kapitan-admins@googlegroups.com>
+License: Apache-2.0
+
 # Sample paragraph, commented out:
 #
 # Files: src/*
