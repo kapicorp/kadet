@@ -9,7 +9,6 @@
 
 import tempfile
 import unittest
-from typing import Optional
 
 from typeguard import TypeCheckError
 
@@ -19,7 +18,7 @@ from kadet import BaseModel, BaseObj, Dict
 class KadetTestModel(BaseModel):
     name: str
     size: int
-    quantity: Optional[int] = None
+    quantity: int | None = None
     description: str = "default description"
 
     def body(self):
@@ -193,8 +192,8 @@ class KadetTest(unittest.TestCase):
             BaseObj.from_dict(
                 {
                     "list_of_objs": [
-                        BaseObj.from_dict(dict(a=1, b=2)),
-                        Dict(dict(c=3, d=4)),
+                        BaseObj.from_dict({"a": 1, "b": 2}),
+                        Dict({"c": 3, "d": 4}),
                     ]
                 }
             ),
