@@ -367,3 +367,33 @@ class KadetTest(unittest.TestCase):
         self.assertIsInstance(output, dict)
         self.assertNotIsInstance(output, Dict)
         self.assertEqual(output, desired_output)
+
+
+class DumpTest(unittest.TestCase):
+    def test_dump_resolves_nested_objects_without_touching_them(self):
+        inner = BaseObj()
+        inner.root.name = "inner"
+        inner.root.entries = [1, {"k": "v"}]
+        outer = BaseObj()
+        outer.root.child = inner
+        outer.root.children = [inner, {"plain": inner}]
+        outer.root.scalar = 3
+
+        dumped = outer.dump()
+
+        expected_inner = {"name": "inner", "entries": [1, {"k": "v"}]}
+        self.assertEqual(
+            dumped,
+            {
+                "child": expected_inner,
+                "children": [expected_inner, {"plain": expected_inner}],
+                "scalar": 3,
+            },
+        )
+        self.assertIs(type(dumped), dict)
+        self.assertIs(type(dumped["child"]), dict)
+        self.assertIs(type(dumped["children"]), list)
+        # dump() is a pure read: the objects still hold their BaseObj children
+        self.assertIs(outer.root.child, inner)
+        self.assertIs(outer.root.children[0], inner)
+        self.assertEqual(outer.dump(), dumped)
