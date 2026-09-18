@@ -16,6 +16,13 @@ ABORT_EXCEPTION_TYPE = ValueError
 
 
 class Dict(Box):
+    """A Box with attribute access and default boxes that converts lazily.
+
+    Nested dicts and lists are stored as given and become Dict and BoxList
+    on first access, so a Dict built from a large document (a rendered helm
+    chart, a whole inventory) costs nothing for the parts nobody reads.
+    """
+
     def __init__(self, *args, **kwargs):
         # See https://github.com/cdgriffith/Box/issues/210
         # Box options
@@ -23,10 +30,70 @@ class Dict(Box):
         kwargs["default_box_attr"] = Dict
         kwargs["default_box_none_transform"] = False
 
+        if args and isinstance(args[0], Box):
+            # Start from the other box's stored values: raw ones stay raw and
+            # converted ones are re-created with this box's options below.
+            args = (dict(dict.items(args[0])), *args[1:])
         super().__init__(*args, **kwargs)
+
+    def __setitem__(self, key, value):
+        if isinstance(value, Box):
+            # As Box does: a stored box takes its options from this one. Box
+            # re-creates it; keep the object when its options already match,
+            # so that a reference held by the caller stays the stored one.
+            wanted = self._Box__box_config(extra_namespace=key)
+            if any(value._box_config.get(k) != v for k, v in wanted.items()):
+                value = Dict(value, **wanted)
+        elif isinstance(value, (dict, list)) and not isinstance(value, BoxList):
+            # Raw: kept as given and converted on first access. Box's
+            # bookkeeping for attribute access of unusual keys still applies.
+            if self._box_config["conversion_box"]:
+                self._box_config["__safe_keys"][self._safe_attr(key)] = key
+            dict.__setitem__(self, key, value)
+            return
+        super().__setitem__(key, value)
+
+    def update(self, *args, **kwargs):
+        # Box.update bypasses __setitem__; route through it.
+        for k, v in dict(*args, **kwargs).items():
+            self[k] = v
+
+    def _converted(self, key, value):
+        """`value` as stored under `key`, converted in place if still raw."""
+        if isinstance(value, dict) and not isinstance(value, Box):
+            value = Dict(value, **self._Box__box_config(extra_namespace=key))
+        elif isinstance(value, list) and not isinstance(value, BoxList):
+            value = BoxList(value, **self._Box__box_config(extra_namespace=key))
+        else:
+            return value
+        dict.__setitem__(self, key, value)
+        return value
+
+    def __getitem__(self, item, _ignore_default=False):
+        return self._converted(item, super().__getitem__(item, _ignore_default))
+
+    def items(self, dotted=False):
+        if dotted:
+            return super().items(dotted=True)
+        return [(key, self[key]) for key in dict.keys(self)]
+
+    def values(self):
+        return [self[key] for key in dict.keys(self)]
+
+    def to_dict(self):
+        return _plain(self)
 
     def dump(self):
         return self.to_dict()
+
+
+def _plain(value):
+    """`value` as plain dicts and lists, whether converted or still raw."""
+    if isinstance(value, dict):
+        return {k: _plain(v) for k, v in dict.items(value)}
+    if isinstance(value, list):
+        return [_plain(v) for v in value]
+    return value
 
 
 def _dump(obj):
@@ -40,9 +107,9 @@ def _dump(obj):
     """
     if isinstance(obj, (BaseObj, BaseModel)):
         return _dump(obj.root)
-    if isinstance(obj, dict):  # includes Dict
-        return {k: _dump(v) for k, v in obj.items()}
-    if isinstance(obj, (list, BoxList)):
+    if isinstance(obj, dict):  # Dict too: its stored values, converted or raw
+        return {k: _dump(v) for k, v in dict.items(obj)}
+    if isinstance(obj, list):  # BoxList too
         return [_dump(item) for item in obj]
     return obj
 
