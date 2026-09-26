@@ -3,8 +3,6 @@ Upstream-Name: kadet
 Upstream-Contact: Ricardo Amaro <ramaro@kapicorp.com>
 Source: https://github.com/kapicorp/kadet
 
-# Sample paragraph, commented out:
-#
-# Files: src/*
-# Copyright: $YEAR $NAME <$CONTACT>
-# License: ...
+Files: SECURITY.md CONTRIBUTING.md .github/pull_request_template.md .github/ISSUE_TEMPLATE/*
+Copyright: 2024 The Kadet Authors <kapitan-admins@googlegroups.com>
+License: Apache-2.0

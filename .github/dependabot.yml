@@ -1,0 +1,21 @@
+# SPDX-FileCopyrightText: 2024 The Kadet Authors <kapitan-admins@googlegroups.com>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+version: 2
+updates:
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore: "
+    labels:
+      - "dependencies"
+    open-pull-requests-limit: 2
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "github-actions"
