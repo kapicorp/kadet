@@ -8,12 +8,12 @@ install:
 .PHONY: test
 test:
 	@echo ----- Running python tests -----
-	uv run python -m unittest discover
+	uv run pytest
 
 .PHONY: test_coverage
 test_coverage:
 	@echo ----- Testing code coverage -----
-	uv run coverage run --source=kadet -m unittest discover
+	uv run coverage run --source=kadet -m pytest
 	uv run coverage report --fail-under=65 -m
 
 .PHONY: test_formatting
