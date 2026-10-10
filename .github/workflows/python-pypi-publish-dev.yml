@@ -1,0 +1,46 @@
+# SPDX-FileCopyrightText: 2024 The Kadet Authors <kapitan-admins@googlegroups.com>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Publish Dev Pre-release to PyPI
+
+# Publish a PEP 440 dev pre-release (e.g. 0.3.3.dev7) to PyPI on every merge
+# to the default branch, so users can test the latest master without waiting
+# for a stable release. Stable releases are handled by python-pip-publish.yml.
+
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+  pypi-publish-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # Full history lets hatch-vcs compute the dev version from the
+          # distance to the latest tag (e.g. 7 commits after v0.3.2).
+          fetch-depth: 0
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+
+      - name: Build and check
+        run: |
+          uv build
+          uvx twine check dist/*.whl dist/*.tar.gz
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+          # The same dev version can recur across re-runs; treat an existing
+          # upload as a no-op instead of failing the workflow.
+          skip-existing: true

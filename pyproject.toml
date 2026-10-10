@@ -1,6 +1,6 @@
 [project]
 name = "kadet"
-version = "0.3.2"
+dynamic = ["version"]
 description = "Easily define and reuse complex Python objects that serialize into JSON or YAML."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -39,8 +39,16 @@ dev = [
 ]
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.version.raw-options]
+# PyPI rejects versions with a local segment (e.g. 0.3.3.dev8+g550f701),
+# so drop it for dev pre-release uploads.
+local_scheme = "no-local-version"
 
 [tool.hatch.build.targets.wheel]
 packages = ["kadet"]
