@@ -134,15 +134,14 @@ class BaseObj(object):
         Use default value if set. Raise TypeError if key value does not
         match type passed in istype.
         """
-        if key in self.kwargs and istype is not None:
-            check_type(self.kwargs[key], istype)
+        if key in self.kwargs:
+            if istype is not None:
+                check_type(self.kwargs[key], istype)
+            return
 
-        if key not in self.kwargs:
-            if default is None:
-                self.kwargs[key] = default
-            elif istype is not None:
-                check_type(default, istype)
-                self.kwargs[key] = default
+        if default is not None and istype is not None:
+            check_type(default, istype)
+        self.kwargs[key] = default
 
     def new(self):
         """Initialise need()ed keys for a new BaseObj."""
