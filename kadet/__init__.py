@@ -47,7 +47,7 @@ def _dump(obj):
     return obj
 
 
-class BaseObj(object):
+class BaseObj:
     """BaseObj."""
 
     def __init__(self, **kwargs):
@@ -114,7 +114,7 @@ class BaseObj(object):
                 self.root = Dict(_copy)
             else:
                 # XXX in Kapitan this is CompileError
-                raise ABORT_EXCEPTION_TYPE("file_path is neither JSON or YAML: {}".format(file_path))
+                raise ABORT_EXCEPTION_TYPE(f"file_path is neither JSON or YAML: {file_path}")
 
     def need(self, key, msg="key and value needed", istype=None):
         """Require that key is in self.kwargs.
@@ -122,7 +122,7 @@ class BaseObj(object):
         Error with msg if key not set. Raises TypeError if key value
         does not match type passed in istype.
         """
-        err_msg = '{}: "{}": {}'.format(self.__class__.__name__, key, msg)
+        err_msg = f'{self.__class__.__name__}: "{key}": {msg}'
         if key not in self.kwargs:
             raise ABORT_EXCEPTION_TYPE(err_msg)  # XXX in Kapitan this is CompileError
         elif istype is not None:
