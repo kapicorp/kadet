@@ -30,41 +30,20 @@ class Dict(Box):
 
 
 def _dump(obj):
-    """Recursively update obj should it contain other BaseObj values."""
+    """Return obj as plain dicts and lists, resolving nested BaseObj and
+    BaseModel values through their root.
+
+    Builds new containers instead of writing converted children back into
+    their parents: storing a dict into a Box converts it into a Box again, so
+    an in-place walk re-boxes and then unboxes every subtree once per level
+    of nesting.
+    """
     if isinstance(obj, (BaseObj, BaseModel)):
-        if isinstance(obj.root, list):
-            obj.root = [_dump(item) for item in obj.root]
-            # root is just a list, return itself
-            return obj.root
-        else:
-            # Update all dict/Dict root items
-            for k, v in obj.root.items():
-                obj.root[k] = _dump(v)
-
-            # return and dump leaf depending on instance type
-            #
-            if isinstance(obj.root, Dict):
-                # root is Dict, dump as dict
-                return obj.root.dump()
-            if isinstance(obj.root, dict):
-                # root is just a dict, return itself
-                return obj.root
-            # BaseObj needs to return dump()
-            else:
-                return obj.root.dump()
-    elif isinstance(obj, Dict):
-        return obj.dump()
-    elif isinstance(obj, (list, BoxList)):
-        obj = [_dump(item) for item in obj]
-        # list has no .dump, return itself
-        return obj
-    elif isinstance(obj, dict):
-        for k, v in obj.items():
-            obj[k] = _dump(v)
-        # dict has no .dump, return itself
-        return obj
-
-    # anything else, return itself
+        return _dump(obj.root)
+    if isinstance(obj, dict):  # includes Dict
+        return {k: _dump(v) for k, v in obj.items()}
+    if isinstance(obj, (list, BoxList)):
+        return [_dump(item) for item in obj]
     return obj
 
 
@@ -183,9 +162,12 @@ class BaseObj(object):
         """Set values/logic for self.root."""
         pass
 
+    def _dump(self, obj):
+        return _dump(obj)
+
     def dump(self):
         """Return object dict/list."""
-        return _dump(self)
+        return self._dump(self)
 
     def sha256(self):
         """Return sha256 hexdigest for self.root."""
@@ -214,6 +196,9 @@ class BaseModel(PydanticBaseModel):
     def __repr__(self):
         return f"<{self.__class__.__name__} at {hex(id(self))} {self.__dict__}>"
 
+    def _dump(self, obj):
+        return _dump(obj)
+
     def dump(self):
         """Return object dict/list."""
-        return _dump(self)
+        return self._dump(self)
